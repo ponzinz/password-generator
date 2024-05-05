@@ -22,18 +22,29 @@
 <?php require_once __DIR__ . '/partials/functions.php'; ?>
 
 <?php
-$passwordLength = isset($_GET['counter']) ? $_GET['counter'] : 0;
+$passwordLength = isset($_GET['counter']) ? $_GET['counter'] : 5;
 
-// $passwordLength = $_GET['counter'] ?? null;
-// var_dump(($userPassword));
-// var_dump(passwordGenerator($userPassword));
+$optArray = array(
+    'upper_option' => implode(range('A', 'Z')),
+    'lower_option' => implode(range('a', 'z')),
+    'numbers_option' => implode(range('0', '9')),
+    'special_option' => implode(range('!', '+'))
+);
 
-if ($passwordLength > 2) {
+$filteredArray = [];
+foreach ($optArray as $key => $value) {
+    isset($_GET[$key]) ? $filteredArray[] = $value : null;
+};
+
+if ($passwordLength > 5) {
     session_start();
     $_SESSION['passLength'] = $passwordLength;
-    header('Location: ./return.php');
-}
+    $_SESSION['filter'] = $filteredArray;
 
+    header('Location: ./return.php');
+};
+
+var_dump($filteredArray);
 ?>
 
 
@@ -45,49 +56,91 @@ if ($passwordLength > 2) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <title>Password Generator</title>
 </head>
 
 <body class="bg-yellow-100">
+    <header class="bg-amber-400">
+        <img class="w-24 absolute top-2 left-[200px] opacity-70" src="https://pngimg.com/d/bee_PNG74646.png" alt="">
+        <!-- <img class="w-24 absolute top-10 right-36" src="https://pngimg.com/d/bee_PNG74646.png" alt=""> -->
+        <h1 class="py-10 text-center text-gray-700 text-3xl font-extrabold drop-shadow-xl">Password Generator 🔒</h1>
+    </header>
 
-    <h1 class="mt-10 text-center text-3xl font-extrabold drop-shadow-xl">Password Generator 🔒</h1>
     <form class="max-w-xs mx-auto mt-24 flex flex-col justify-center items-center" method="GET">
         <div class="flex items-center justify-center">
-            <div id="decrement-btn" class="flex justify-center items-center w-10 h-10 rounded-full text-text-gray-600 focus:outline-none bg-amber-400 hover:bg-amber-600 drop-shadow-xl">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
-                </svg>
-            </div>
 
-            <input id="counter" min="2" name="counter" value="<?php echo $passwordLength ?>" type="number" class="w-12 mx-4 text-3xl text-center font-extrabold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none bg-transparent" />
+            <input id="counter" min="5" name="counter" value="<?php echo $passwordLength ?>" type="number" class="w-12 mx-4 text-3xl text-center font-extrabold focus:outline-offset-2 focus:outline-amber-600 focus:outline [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none bg-transparent rounded-md" />
 
-            <div id="increment-btn" class="flex justify-center items-center w-10 h-10 rounded-full text-text-gray-600 focus:outline-none bg-amber-400 hover:bg-amber-600 drop-shadow-xl">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12M6 12h12"></path>
-                </svg>
-            </div>
         </div>
 
-
         <!-- slider -->
-        <!-- <div class="p-6 w-full max-w-md">
-            <div class="mb-4">
-                <label for="price-range" class="block text-gray-700 font-bold mb-2 text-center">Password length</label>
-                <input type="range" id="password-range" class="w-full accent-amber-600" min="2" max="12" value="8">
+        <div class="p-6 w-full max-w-md ">
+            <div class="mb-2">
+                <label for="price-range" class="block text-gray-800 font-bold mb-2 text-center">Password length</label>
+                <input type="range" name="range" id="password-range" class="w-full accent-amber-600" min="5" max="64" value="5">
             </div>
             <div class="flex justify-between text-gray-500">
-                <span id="minLength">2</span>
-                <span id="maxLength">12</span>
+                <span id="minLength">5</span>
+                <span id="maxLength">64</span>
             </div>
-        </div> -->
+        </div>
+        <button class="p-2 text-gray-800 font-bold bg-amber-400 hover:bg-amber-600 rounded-md shadow-lg" type="submit">Generate</button>
 
-        <button class="p-2 mt-10 text-gray-600 font-bold bg-amber-400 hover:bg-amber-600 rounded-md shadow-lg" type="submit">Generate</button>
+        <!-- options -->
+        <div class="mt-8">
+            <ul class="w-48 flex flex-col gap-4 font-bold text-gray-800">
+                <li class="p-2 flex items-center justify-between border-2 border-amber-300 bg-white rounded-md">
+                    <span>A-Z</span>
+                    <div class="inline-flex items-center">
+                        <label class="relative flex items-center rounded-full cursor-pointer" htmlFor="custom">
+                            <input checked name="upper_option" type="checkbox" class="peer relative appearance-none w-5 h-5 border-2 rounded-md border-amber-400 cursor-pointer transition-all before:content[''] before:block before:bg-blue-gray-500 before:w-12 before:h-12 before:rounded-full before:absolute before:top-2/4 before:left-2/4 before:-translate-y-2/4 before:-translate-x-2/4 before:opacity-0 hover:before:opacity-10 before:transition-opacity checked:bg-amber-400 checked:border-amber-400 checked:before:bg-amber-400" id="upper_option" /><span class="absolute text-white transition-opacity opacity-0 pointer-events-none top-2/4 left-2/4 -translate-y-2/4 -translate-x-2/4 peer-checked:opacity-100">
+                                <i class="fa-solid fa-asterisk"></i>
+                            </span>
+                        </label>
+                    </div>
+                </li>
+
+                <li class="p-2 flex items-center justify-between border-2 border-amber-300 bg-white rounded-md">
+                    <span>a-z</span>
+                    <div class="inline-flex items-center">
+                        <label class="relative flex items-center rounded-full cursor-pointer" htmlFor="custom">
+                            <input name="lower_option" type="checkbox" class="peer relative appearance-none w-5 h-5 border-2 rounded-md border-amber-400 cursor-pointer transition-all before:content[''] before:block before:bg-blue-gray-500 before:w-12 before:h-12 before:rounded-full before:absolute before:top-2/4 before:left-2/4 before:-translate-y-2/4 before:-translate-x-2/4 before:opacity-0 hover:before:opacity-10 before:transition-opacity checked:bg-amber-400 checked:border-amber-400 checked:before:bg-amber-400" id="custom" /><span class="absolute text-white transition-opacity opacity-0 pointer-events-none top-2/4 left-2/4 -translate-y-2/4 -translate-x-2/4 peer-checked:opacity-100">
+                                <i class="fa-solid fa-asterisk"></i>
+                            </span>
+                        </label>
+                    </div>
+                </li>
+
+                <li class="p-2 flex items-center justify-between border-2 border-amber-300 bg-white rounded-md">
+                    <span>0-9</span>
+                    <div class="inline-flex items-center">
+                        <label class="relative flex items-center rounded-full cursor-pointer" htmlFor="custom">
+                            <input name="numbers_option" type="checkbox" class="peer relative appearance-none w-5 h-5 border-2 rounded-md border-amber-400 cursor-pointer transition-all before:content[''] before:block before:bg-blue-gray-500 before:w-12 before:h-12 before:rounded-full before:absolute before:top-2/4 before:left-2/4 before:-translate-y-2/4 before:-translate-x-2/4 before:opacity-0 hover:before:opacity-10 before:transition-opacity checked:bg-amber-400 checked:border-amber-400 checked:before:bg-amber-400" id="custom" /><span class="absolute text-white transition-opacity opacity-0 pointer-events-none top-2/4 left-2/4 -translate-y-2/4 -translate-x-2/4 peer-checked:opacity-100">
+                                <i class="fa-solid fa-asterisk"></i>
+                            </span>
+                        </label>
+                    </div>
+                </li>
+
+                <li class="p-2 flex items-center justify-between border-2 border-amber-300 bg-white rounded-md">
+                    <span>!@#$%^&*</span>
+                    <div class="inline-flex items-center">
+                        <label class="relative flex items-center rounded-full cursor-pointer" htmlFor="custom">
+                            <input name="special_option" type="checkbox" class="peer relative appearance-none w-5 h-5 border-2 rounded-md border-amber-400 cursor-pointer transition-all before:content[''] before:block before:bg-blue-gray-500 before:w-12 before:h-12 before:rounded-full before:absolute before:top-2/4 before:left-2/4 before:-translate-y-2/4 before:-translate-x-2/4 before:opacity-0 hover:before:opacity-10 before:transition-opacity checked:bg-amber-400 checked:border-amber-400 checked:before:bg-amber-400" id="custom" /><span class="absolute text-white transition-opacity opacity-0 pointer-events-none top-2/4 left-2/4 -translate-y-2/4 -translate-x-2/4 peer-checked:opacity-100">
+                                <i class="fa-solid fa-asterisk"></i>
+                            </span>
+                        </label>
+                    </div>
+                </li>
+            </ul>
+        </div>
 
         <div>
-            <?php if ($passwordLength < 2) { ?>
-                <p class="mt-10 text-sm text-center text-gray-600 dark:text-gray-500 font-extrabold drop-shadow-xl">Please, choose password's length!</p>
+            <?php if ($passwordLength < 5) { ?>
+                <p class="mt-10 text-xl text-center text-gray-600 dark:text-gray-500 font-extrabold drop-shadow-xl">Please, choose password's length!</p>
             <?php } else { ?>
-                <p class="mt-10 text-sm text-center text-amber-600 dark:text-amber-500 font-extrabold drop-shadow-xl"><span class="font-medium">Alright!</span> Password generated!</p>
+                <p class="mt-10 text-xl text-center text-amber-600 dark:text-amber-500 font-extrabold drop-shadow-xl"><span class="font-medium">Alright!</span> Password generated!</p>
             <?php } ?>
         </div>
 
@@ -100,25 +153,29 @@ if ($passwordLength > 2) {
         //numero max di caratteri
         // let pwMaxLength = document.getElementById('password-range').value;
 
-        //
-        let counterEl = document.getElementById('counter');
-        const decrementBtn = document.getElementById('decrement-btn');
-        const incrementBtn = document.getElementById('increment-btn');
-        let count = 0;
+        const inputs = [...document.querySelectorAll("input")];
+        inputs.forEach((inp, i) => inp.addEventListener("input", () =>
+            inputs[1 - i].value = inputs[i].value))
 
-        decrementBtn.addEventListener('click', () => {
-            if (count > 1) {
-                count--;
-                counterEl.setAttribute('value', count);
-            }
-        });
+        // const counterEl = document.getElementById('counter');
 
-        incrementBtn.addEventListener('click', () => {
-            if (count < 12)
-                count++;
-            counterEl.setAttribute('value', count);
+        // const decrementBtn = document.getElementById('decrement-btn');
+        // const incrementBtn = document.getElementById('increment-btn');
+        // let count = 0;
 
-        });
+        // decrementBtn.addEventListener('click', () => {
+        //     if (count > 1) {
+        //         count--;
+        //         counterEl.setAttribute('value', count);
+        //     }
+        // });
+
+        // incrementBtn.addEventListener('click', () => {
+        //     if (count < 12) {
+        //         count++;
+        //         counterEl.setAttribute('value', count);
+        //     }
+        // });
 
 
         // console.log(pwMaxLength);
